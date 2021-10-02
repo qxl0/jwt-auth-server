@@ -13,6 +13,7 @@ import { isAuth } from "./isAuth";
 import { compare, hash } from "bcryptjs";
 import { MyContext } from "./MyContext";
 import { createAccessToken, createRefreshToken } from "./auth";
+import { sendRefreshToken } from "./sendRefreshToken";
 
 @ObjectType()
 class LoginResponse {
@@ -79,11 +80,7 @@ export class UserResolvers {
     }
 
     // login successful
-    res.cookie("jid", 
-      createRefreshToken(user), {
-          httpOnly: true,
-        }
-      );
+    sendRefreshToken(res, createRefreshToken(user));
 
     return {
       accessToken: createAccessToken(user),
