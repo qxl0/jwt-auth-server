@@ -7,12 +7,18 @@ import { buildSchema } from "type-graphql";
 import { UserResolvers } from "./UserResolver";
 import cookieParser from "cookie-parser";
 import { verify } from "jsonwebtoken";
+import cors from "cors";
 import { createAccessToken, createRefreshToken } from "./auth";
 import { User } from "./entity/User";
 import { sendRefreshToken } from "./sendRefreshToken";
 
 (async () => {
     const app = express();
+    // set up cors
+    app.use(cors({
+        origin: "http://localhost:3000",
+        credentials: true
+        }));
     app.use(cookieParser());
     app.get('/', (_req, res) => {
         res.send('Hello World!');
@@ -39,6 +45,10 @@ import { sendRefreshToken } from "./sendRefreshToken";
             return res.send({ ok: false, accessToken: '' });
         }
 
+        if (user.tokenVersion !== payload.tokenVersion) {
+            return res.send({ ok: false, accessToken: '' });
+        }
+
         sendRefreshToken(res, createRefreshToken(user));
 
         return res.send({ ok: true, accessToken: createAccessToken(user) });
@@ -55,7 +65,7 @@ import { sendRefreshToken } from "./sendRefreshToken";
     });
 
     await apolloServer.start();
-    apolloServer.applyMiddleware({ app });
+    apolloServer.applyMiddleware({ app, cors: false });
 
     app.listen(4000, () => {
         console.log("express server started at port 4000");

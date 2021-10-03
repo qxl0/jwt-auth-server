@@ -2,6 +2,7 @@ import {
   Arg,
   Ctx,
   Field,
+  Int,
   Mutation,
   ObjectType,
   Query,
@@ -14,6 +15,7 @@ import { compare, hash } from "bcryptjs";
 import { MyContext } from "./MyContext";
 import { createAccessToken, createRefreshToken } from "./auth";
 import { sendRefreshToken } from "./sendRefreshToken";
+import { getConnection } from "typeorm";
 
 @ObjectType()
 class LoginResponse {
@@ -24,7 +26,6 @@ class LoginResponse {
 @Resolver()
 export class UserResolvers {
   @Query(() => String)
-  @UseMiddleware(isAuth)
   hello() {
     return "Hello World!";
   }
@@ -41,6 +42,15 @@ export class UserResolvers {
   @Query(() => [User])
   async users() {
     return await User.find();
+  }
+
+  @Mutation(() => Boolean)
+  async revokeRefreshTokensForUser(
+    @Arg('userId', () => Int) userId: number
+  ) {
+    await getConnection().getRepository(User).increment({ id: userId }, 'tokenVersion', 1);
+
+    return true;
   }
 
   @Mutation(() => Boolean)
