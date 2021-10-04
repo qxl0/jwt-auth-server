@@ -16,9 +16,10 @@ import { sendRefreshToken } from "./sendRefreshToken";
     const app = express();
     // set up cors
     app.use(cors({
-        origin: "http://localhost:3000",
+        origin: ["http://localhost:3000","https://studio.apollographql.com"],
         credentials: true
         }));
+    
     app.use(cookieParser());
     app.get('/', (_req, res) => {
         res.send('Hello World!');
